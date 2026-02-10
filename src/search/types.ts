@@ -1,10 +1,10 @@
 /** ripgrep に渡す検索オプション */
 export interface SearchOptions {
-  /** 検索パターン（正規表現） */
+  /** 検索パターン (正規表現) */
   pattern: string;
   /** 検索対象ディレクトリパスの配列 */
   paths: string[];
-  /** ファイル glob パターン（例: "*.ts"） */
+  /** ファイル glob パターン (例: "*.ts") */
   glob?: string;
   /** 前後のコンテキスト行数 */
   contextLines: number;
@@ -55,5 +55,5 @@ export interface RipgrepJsonMatch {
   };
 }
 
-/** ripgrep --json 出力（match 以外のタイプも存在するが、match のみ使用） */
+/** ripgrep --json 出力 (match 以外のタイプも存在するが、match のみ使用) */
 export type RipgrepJsonLine = RipgrepJsonMatch | { type: string };
