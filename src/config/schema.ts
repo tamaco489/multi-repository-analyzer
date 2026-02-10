@@ -6,6 +6,7 @@ const RepoConfigSchema = z.object({
   env_key: z.string(),
   labels: z.array(z.string()),
   description: z.string(),
+  context_files: z.array(z.string()).optional(),
   priority_paths: z.array(z.string()).optional(),
 });
 
@@ -34,6 +35,7 @@ export interface ResolvedRepo {
   path: string;
   labels: string[];
   description: string;
+  context_files: string[];
   priority_paths: string[];
   available: boolean;
 }
