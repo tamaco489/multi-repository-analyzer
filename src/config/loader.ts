@@ -35,6 +35,7 @@ export function loadConfig(): ResolvedConfig {
           path: "",
           labels: repo.labels,
           description: repo.description,
+          context_files: repo.context_files ?? [],
           priority_paths: repo.priority_paths ?? [],
           available: false,
         };
@@ -51,6 +52,7 @@ export function loadConfig(): ResolvedConfig {
         path: resolvedPath,
         labels: repo.labels,
         description: repo.description,
+        context_files: repo.context_files ?? [],
         priority_paths: repo.priority_paths ?? [],
         available,
       };

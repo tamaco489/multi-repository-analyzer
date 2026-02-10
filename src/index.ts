@@ -17,6 +17,10 @@ import {
   FindCrossRepoDependenciesSchema,
   handleFindCrossRepoDependencies,
 } from "./tools/find-cross-repo-dependencies.js";
+import {
+  GetRepoContextSchema,
+  handleGetRepoContext,
+} from "./tools/get-repo-context.js";
 import { handleListRepos } from "./tools/list-repos.js";
 import { handleSearchCode, SearchCodeSchema } from "./tools/search-code.js";
 import { logger } from "./utils/logger.js";
@@ -48,6 +52,18 @@ async function main() {
     async () => {
       // 設定済み全リポジトリの情報 (ラベル、パス、ステータス等) をテキストで返す
       return handleListRepos(config);
+    },
+  );
+
+  server.registerTool(
+    "get_repo_context",
+    {
+      description:
+        "リポジトリの README.md や CLAUDE.md 等のコンテキストファイルを取得する。横断検索の前にプロジェクト構成を把握するために使用する。repos/labelsで対象を絞り込み可能。",
+      inputSchema: GetRepoContextSchema,
+    },
+    async (args) => {
+      return handleGetRepoContext(config, args);
     },
   );
 

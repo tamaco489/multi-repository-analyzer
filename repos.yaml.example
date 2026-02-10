@@ -4,6 +4,8 @@ repositories:
     env_key: REPO_A
     labels: [sample]
     description: "リポジトリA"
+    context_files:
+      - README.md
     priority_paths:
       - src/
 
@@ -11,6 +13,8 @@ repositories:
     env_key: REPO_B
     labels: [sample]
     description: "リポジトリB"
+    context_files:
+      - README.md
     priority_paths:
       - src/
 
@@ -18,6 +22,8 @@ repositories:
     env_key: REPO_C
     labels: [sample]
     description: "リポジトリC"
+    context_files:
+      - README.md
     priority_paths:
       - src/
 
