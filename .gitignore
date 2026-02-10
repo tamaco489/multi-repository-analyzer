@@ -9,3 +9,4 @@ build/
 
 # Environment variables
 .env
+repos.yaml

@@ -53,7 +53,8 @@ index.ts (ツール登録)
 
 ## 設定ファイル
 
-- `repos.yaml` — リポジトリ定義 + `priority_paths` + 検索設定
+- `repos.yaml` — リポジトリ定義 + `priority_paths` + 検索設定 (環境依存, gitignore 対象)
+- `repos.yaml.example` — `repos.yaml` のサンプル
 - `.env` — リポジトリの実パス (環境依存, gitignore 対象)
 - `.env.example` — `.env` のサンプル
 
