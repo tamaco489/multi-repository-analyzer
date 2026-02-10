@@ -1,9 +1,9 @@
 import { z } from "zod";
-import type { ResolvedConfig } from "../config/schema.js";
 import { resolveTargetRepos } from "../config/loader.js";
+import type { ResolvedConfig } from "../config/schema.js";
 import { searchRepo } from "../search/ripgrep.js";
-import { formatResults } from "../utils/formatter.js";
 import type { SearchMatch, SearchResult } from "../search/types.js";
+import { formatResults } from "../utils/formatter.js";
 import { logger } from "../utils/logger.js";
 
 /** find_api_callers ツールの入力スキーマ */

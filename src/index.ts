@@ -3,18 +3,19 @@
  *
  * 設定を読み込み、ツールを登録し、stdio トランスポートで MCP サーバーを起動する。
  */
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadConfig } from "./config/loader.js";
-import { logger } from "./utils/logger.js";
+import {
+  FindApiCallersSchema,
+  handleFindApiCallers,
+} from "./tools/find-api-callers.js";
 import { handleListRepos } from "./tools/list-repos.js";
 import { handleSearchCode, SearchCodeSchema } from "./tools/search-code.js";
-import {
-  handleFindApiCallers,
-  FindApiCallersSchema,
-} from "./tools/find-api-callers.js";
+import { logger } from "./utils/logger.js";
 
 // package.json から version を読み込み、McpServer の識別情報として使用する
 const pkg = JSON.parse(
