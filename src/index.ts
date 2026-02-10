@@ -10,25 +10,25 @@ import * as path from "node:path";
 import { loadConfig } from "./config/loader.js";
 import { logger } from "./utils/logger.js";
 import { handleListRepos } from "./tools/list-repos.js";
-import {
-  handleSearchCode,
-  SearchCodeSchema,
-} from "./tools/search-code.js";
+import { handleSearchCode, SearchCodeSchema } from "./tools/search-code.js";
 
+// package.json から version を読み込み、McpServer の識別情報として使用する
 const pkg = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
 ) as { version: string };
 
 async function main() {
+  // repos.yaml と .env を読み込み、各リポジトリのパス解決・存在チェックを行う
   const config = loadConfig();
   logger.info(`Loaded ${config.repos.length} repositories`);
 
+  // MCP サーバーインスタンスを作成。name と version はクライアントがサーバーを識別するために使用する
   const server = new McpServer({
     name: "multi-repo-analyzer",
     version: pkg.version,
   });
 
-  // registerTool でツールを MCP クライアント（Claude Code 等）に公開する。
+  // registerTool でツールを MCP クライアント (Claude Code 等) に公開する。
   // クライアントは description と inputSchema をもとにツールの用途・引数を認識し、必要に応じて自動で呼び出す。
   server.registerTool(
     "list_repos",
@@ -37,6 +37,7 @@ async function main() {
         "設定済みリポジトリの一覧を表示する。各リポジトリのラベル、パス、優先パス、利用可否ステータスを確認できる。",
     },
     async () => {
+      // 設定済み全リポジトリの情報 (ラベル、パス、ステータス等) をテキストで返す
       return handleListRepos(config);
     },
   );
@@ -49,6 +50,7 @@ async function main() {
       inputSchema: SearchCodeSchema,
     },
     async (args) => {
+      // 引数で指定されたパターンで対象リポジトリを横断検索し、結果をテキストで返す
       return handleSearchCode(config, args);
     },
   );

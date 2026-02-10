@@ -8,16 +8,16 @@ import { logger } from "../utils/logger.js";
 
 /** search_code ツールの入力スキーマ */
 export const SearchCodeSchema = z.object({
-  query: z.string().describe("検索パターン（正規表現）"),
+  query: z.string().describe("検索パターン (正規表現)"),
   repos: z.array(z.string()).optional().describe("検索対象リポジトリ名の配列"),
   labels: z
     .array(z.string())
     .optional()
-    .describe("ラベルでリポジトリをフィルタ（例: ['backend']）"),
+    .describe("ラベルでリポジトリをフィルタ (例: ['backend'])"),
   glob: z
     .string()
     .optional()
-    .describe("ファイルパターン（例: '*.ts', '*.tf'）"),
+    .describe("ファイルパターン (例: '*.ts', '*.tf')"),
   scope: z
     .enum(["priority", "full"])
     .default("priority")
@@ -33,14 +33,17 @@ export async function handleSearchCode(
   config: ResolvedConfig,
   args: Record<string, unknown>,
 ) {
+  // Zod スキーマで入力をバリデーションし、デフォルト値 (scope: "priority" 等) を適用する
   const params = SearchCodeSchema.parse(args);
 
+  // repos 名・labels の OR 条件で検索対象リポジトリを絞り込む (どちらも未指定なら全リポジトリ)
   const targetRepos = resolveTargetRepos(
     config.repos,
     params.repos,
     params.labels,
   );
 
+  // 該当リポジトリがなければ早期リターン
   if (targetRepos.length === 0) {
     return {
       content: [
@@ -49,6 +52,7 @@ export async function handleSearchCode(
     };
   }
 
+  // 各リポジトリで逐次検索。失敗したリポジトリはスキップし、他の結果は返却する
   const results: SearchResult[] = [];
   for (const repo of targetRepos) {
     try {
@@ -64,6 +68,7 @@ export async function handleSearchCode(
     }
   }
 
+  // 検索結果をリポジトリ別にグループ化したテキストにフォーマットして返す
   const text = formatResults(results);
   return {
     content: [{ type: "text" as const, text }],
