@@ -1,73 +1,65 @@
-# Multi-Repository Analyzer
+# CLAUDE.md
 
-複数のローカルリポジトリを横断検索・分析するローカルMCPサーバー。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 技術スタック
+## Overview
 
-- TypeScript (Node.js)
-- `@modelcontextprotocol/sdk` — MCP サーバー実装
-- Zod — スキーマバリデーション
-- ripgrep (`rg`) — コード検索エンジン
-- `js-yaml` — YAML設定読み込み
-- `dotenv` — `.env` 読み込み
+複数のローカルリポジトリを横断検索・分析するローカル MCP サーバー。ripgrep (`rg`) を検索エンジンとして使用し、stdio トランスポートで JSON-RPC 通信する。
 
-## プロジェクト構成
-
-```text
-src/
-├── index.ts              # エントリーポイント (MCPサーバー起動)
-├── config/
-│   ├── schema.ts         # Zodスキーマ (YAML + env解決)
-│   └── loader.ts         # YAML読み込み + .env解決
-├── search/
-│   ├── ripgrep.ts        # ripgrepラッパー
-│   └── types.ts          # 検索結果型定義
-├── tools/
-│   ├── list-repos.ts
-│   ├── search-code.ts
-│   ├── find-api-callers.ts
-│   ├── search-api-definition.ts
-│   └── find-cross-repo-dependencies.ts
-└── utils/
-    ├── logger.ts         # stderrロガー
-    └── formatter.ts      # 結果フォーマット
-```
-
-## 設定ファイル
-
-- `repos.yaml` — リポジトリ定義 + priority_paths + 検索設定
-- `.env` — リポジトリの実パス（環境依存、gitignore対象）
-- `.env.example` — `.env` のサンプル
-
-## コマンド
+## Commands
 
 ```bash
-# 依存インストール
-npm install
+npm install        # 依存インストール
+npm run build      # tsc ビルド (出力: build/)
+npm run dev        # tsx で開発実行
+npm run lint       # Biome lint チェック
+npm run lint:fix   # Biome lint 自動修正
+```
 
-# ビルド
-npm run build
+Claude Code への登録:
 
-# 開発時（ts-node）
-npm run dev
-
-# Claude Codeへの登録
+```bash
 claude mcp add multi-repo-analyzer node ./build/index.js
 ```
 
-## MCPツール一覧
+## Architecture
 
-| ツール名 | 用途 |
-|----------|------|
-| `list_repos` | 設定済みリポジトリ一覧の表示 |
-| `search_code` | 汎用コード検索（regex、ラベル/glob指定可） |
-| `find_api_callers` | APIエンドポイントの呼び出し箇所を横断検索 |
-| `search_api_definition` | APIハンドラー・型定義・エラーパターンの検索 |
-| `find_cross_repo_dependencies` | システム間API依存の追跡 |
+### データフロー
+
+```text
+index.ts (ツール登録)
+  → tools/*.ts (入力バリデーション + ビジネスロジック)
+    → search/ripgrep.ts (ripgrep 実行 + 結果パース)
+    → utils/formatter.ts (結果フォーマット + MCP レスポンス生成)
+```
+
+### 設定の読み込み
+
+`config/loader.ts` が起動時に `repos.yaml` + `.env` を読み込み、`ResolvedConfig` を生成する。各ツールハンドラはこの `config` を引数で受け取る。
+
+### 主要モジュール
+
+- **`search/ripgrep.ts`**: ripgrep ラッパー。`searchRepo` (単一リポ) と `searchRepos` (複数リポ並列, `Promise.all`) を export。正規表現エスケープ用 `escapeForRipgrep` もここに集約
+- **`utils/formatter.ts`**: `formatResults` (検索結果 → Markdown テキスト) と `textResponse` (MCP レスポンスヘルパー) を export
+- **`config/schema.ts`**: Zod スキーマと型定義 (`ResolvedRepo`, `ResolvedConfig`, `SearchConfig`)
+- **`constants/search.ts`**: 検索設定のデフォルト値
+
+### ツール追加パターン
+
+1. `src/tools/<tool-name>.ts` に Zod スキーマ + ハンドラ関数を定義
+2. `src/index.ts` で `server.registerTool()` に登録
+3. 検索は `searchRepos()` を使用 (並列実行 + エラーハンドリング内蔵)
+4. レスポンスは `textResponse()` で返す
+
+## 設定ファイル
+
+- `repos.yaml` — リポジトリ定義 + `priority_paths` + 検索設定
+- `.env` — リポジトリの実パス (環境依存, gitignore 対象)
+- `.env.example` — `.env` のサンプル
 
 ## 開発ルール
 
-- stdoutはJSON-RPC通信に使用するため、ログはすべてstderrに出力する
-- 検索結果のみ返す設計（ファイル読み取りはClaude Code側が行う）
+- stdout は JSON-RPC 通信に使用するため、ログはすべて stderr に出力する (`logger` を使用)
+- 検索結果のみ返す設計 (ファイル読み取りは Claude Code 側が行う)
 - `scope: "priority"` がデフォルト。`priority_paths` 配下のみ検索して高速化
-- `scope: "full"` でリポジトリ全体を検索可能
+- Biome: recommended ルール、indent 2 spaces、double quote
