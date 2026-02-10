@@ -8,7 +8,13 @@ It uses ripgrep (`rg`) as the search engine and can be invoked as a tool from MC
 ## Prerequisites
 
 - Node.js >= 24
-- [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg` must be available on your PATH)
+- [ripgrep](https://github.com/BurntSushi/ripgrep) — must be installed as a system binary (`rg` on your PATH). Claude Code's built-in `rg` alias is not available to MCP server subprocesses.
+- [just](https://github.com/casey/just) (task runner)
+
+```bash
+# macOS
+brew install ripgrep just
+```
 
 ## Setup
 
@@ -70,13 +76,15 @@ search:
 
 ### 3. Register with Claude Code
 
+Run the following command **in the project directory where you want to use the tools**:
+
 ```bash
 claude mcp add multi-repo-analyzer node /path/to/multi-repository-analyzer/build/index.js
 ```
 
 Replace `/path/to/multi-repository-analyzer` with the actual path where you cloned the repository.
 
-After registration, call the `list_repos` tool from Claude Code. If it returns the repository list, the server is working correctly.
+After registration, restart Claude Code and call the `list_repos` tool. If it returns the repository list, the server is working correctly.
 
 ## MCP Tools
 

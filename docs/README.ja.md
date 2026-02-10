@@ -8,7 +8,13 @@ ripgrep (`rg`) を検索エンジンとして使用し、Claude Code などの M
 ## 前提条件
 
 - Node.js >= 24
-- [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg` コマンドにパスが通っていること)
+- [ripgrep](https://github.com/BurntSushi/ripgrep) — システムバイナリとしてインストールが必要 (`rg` にパスが通っていること)。Claude Code 内蔵の `rg` エイリアスは MCP サーバーのサブプロセスからは利用できない。
+- [just](https://github.com/casey/just) (タスクランナー)
+
+```bash
+# macOS
+brew install ripgrep just
+```
 
 ## セットアップ
 
@@ -70,13 +76,15 @@ search:
 
 ### 3. Claude Code への登録
 
+**ツールを利用したいプロジェクトのディレクトリ**で以下を実行する:
+
 ```bash
 claude mcp add multi-repo-analyzer node /path/to/multi-repository-analyzer/build/index.js
 ```
 
 `/path/to/multi-repository-analyzer` は実際のクローン先パスに置き換えること。
 
-登録後、Claude Code から `list_repos` ツールを呼び出してリポジトリ一覧が返れば正常に動作している。
+登録後、Claude Code を再起動し `list_repos` ツールを呼び出してリポジトリ一覧が返れば正常に動作している。
 
 ## MCP ツール一覧
 
