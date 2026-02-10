@@ -1,9 +1,9 @@
 import { z } from "zod";
-import type { ResolvedConfig } from "../config/schema.js";
 import { resolveTargetRepos } from "../config/loader.js";
+import type { ResolvedConfig } from "../config/schema.js";
 import { searchRepo } from "../search/ripgrep.js";
-import { formatResults } from "../utils/formatter.js";
 import type { SearchResult } from "../search/types.js";
+import { formatResults } from "../utils/formatter.js";
 import { logger } from "../utils/logger.js";
 
 /** search_code ツールの入力スキーマ */
@@ -14,10 +14,7 @@ export const SearchCodeSchema = z.object({
     .array(z.string())
     .optional()
     .describe("ラベルでリポジトリをフィルタ (例: ['backend'])"),
-  glob: z
-    .string()
-    .optional()
-    .describe("ファイルパターン (例: '*.ts', '*.tf')"),
+  glob: z.string().optional().describe("ファイルパターン (例: '*.ts', '*.tf')"),
   scope: z
     .enum(["priority", "full"])
     .default("priority")

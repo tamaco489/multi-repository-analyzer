@@ -1,11 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as yaml from "js-yaml";
 import * as dotenv from "dotenv";
-import { ConfigSchema } from "./schema.js";
-import type { ResolvedRepo, ResolvedConfig, SearchConfig } from "./schema.js";
-import { logger } from "../utils/logger.js";
+import * as yaml from "js-yaml";
 import { SEARCH_DEFAULTS } from "../constants/search.js";
+import { logger } from "../utils/logger.js";
+import type { ResolvedConfig, ResolvedRepo, SearchConfig } from "./schema.js";
+import { ConfigSchema } from "./schema.js";
 
 /**
  * repos.yaml と .env を読み込み、パス解決済みの設定を返す。

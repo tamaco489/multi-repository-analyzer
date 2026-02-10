@@ -1,14 +1,14 @@
+import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { spawn } from "node:child_process";
+import type { ResolvedRepo, SearchConfig } from "../config/schema.js";
 import type {
-  SearchOptions,
-  SearchMatch,
-  SearchResult,
   RipgrepJsonLine,
   RipgrepJsonMatch,
+  SearchMatch,
+  SearchOptions,
+  SearchResult,
 } from "./types.js";
-import type { ResolvedRepo, SearchConfig } from "../config/schema.js";
 
 /**
  * ripgrep を子プロセスとして実行し、検索結果を返す。

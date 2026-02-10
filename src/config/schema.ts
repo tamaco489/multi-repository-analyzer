@@ -13,7 +13,9 @@ const RepoConfigSchema = z.object({
 const SearchConfigSchema = z.object({
   max_results: z.number().default(SEARCH_DEFAULTS.MAX_RESULTS),
   context_lines: z.number().default(SEARCH_DEFAULTS.CONTEXT_LINES),
-  exclude_patterns: z.array(z.string()).default([...SEARCH_DEFAULTS.EXCLUDE_PATTERNS]),
+  exclude_patterns: z
+    .array(z.string())
+    .default([...SEARCH_DEFAULTS.EXCLUDE_PATTERNS]),
 });
 
 /** repos.yaml 全体のバリデーションスキーマ */
