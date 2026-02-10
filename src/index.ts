@@ -11,6 +11,10 @@ import { loadConfig } from "./config/loader.js";
 import { logger } from "./utils/logger.js";
 import { handleListRepos } from "./tools/list-repos.js";
 import { handleSearchCode, SearchCodeSchema } from "./tools/search-code.js";
+import {
+  handleFindApiCallers,
+  FindApiCallersSchema,
+} from "./tools/find-api-callers.js";
 
 // package.json から version を読み込み、McpServer の識別情報として使用する
 const pkg = JSON.parse(
@@ -52,6 +56,19 @@ async function main() {
     async (args) => {
       // 引数で指定されたパターンで対象リポジトリを横断検索し、結果をテキストで返す
       return handleSearchCode(config, args);
+    },
+  );
+
+  server.registerTool(
+    "find_api_callers",
+    {
+      description:
+        "API エンドポイントの呼び出し箇所を横断検索する。API パスを指定すると、fetch/axios 等の HTTP クライアントからの呼び出し箇所を検索する。method で HTTP メソッドを絞り込み可能。",
+      inputSchema: FindApiCallersSchema,
+    },
+    async (args) => {
+      // API パスから検索パターンを生成し、HTTP クライアント呼び出し箇所を検索して返す
+      return handleFindApiCallers(config, args);
     },
   );
 
