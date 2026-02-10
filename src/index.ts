@@ -13,6 +13,10 @@ import {
   FindApiCallersSchema,
   handleFindApiCallers,
 } from "./tools/find-api-callers.js";
+import {
+  FindCrossRepoDependenciesSchema,
+  handleFindCrossRepoDependencies,
+} from "./tools/find-cross-repo-dependencies.js";
 import { handleListRepos } from "./tools/list-repos.js";
 import { handleSearchCode, SearchCodeSchema } from "./tools/search-code.js";
 import { logger } from "./utils/logger.js";
@@ -70,6 +74,19 @@ async function main() {
     async (args) => {
       // API パスから検索パターンを生成し、HTTP クライアント呼び出し箇所を検索して返す
       return handleFindApiCallers(config, args);
+    },
+  );
+
+  server.registerTool(
+    "find_cross_repo_dependencies",
+    {
+      description:
+        "リポジトリ間の依存関係を追跡する。source_repo への参照を target_repos から検索し、依存関係を可視化する。path で追加キーワードを指定するとより精度の高い結果が得られる。",
+      inputSchema: FindCrossRepoDependenciesSchema,
+    },
+    async (args) => {
+      // source_repo の名前バリエーション + path で target_repos を横断検索し、依存関係を返す
+      return handleFindCrossRepoDependencies(config, args);
     },
   );
 
