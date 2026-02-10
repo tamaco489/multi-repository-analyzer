@@ -23,10 +23,10 @@ npm run build
 
 ### 2. Configure Target Repositories
 
-Define the repositories to search in `repos.yaml` and specify their local paths in `.env`.
+Copy the example files and edit them to match your environment.
 
 ```bash
-cp .env.example .env
+just setup
 ```
 
 Edit `.env` to set the actual paths of the target repositories.
