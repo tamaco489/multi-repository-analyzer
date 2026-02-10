@@ -1,5 +1,10 @@
 import type { SearchResult } from "../search/types.js";
 
+/** MCP プロトコルのテキストレスポンスを生成する */
+export function textResponse(text: string) {
+  return { content: [{ type: "text" as const, text }] };
+}
+
 /**
  * 検索結果をリポジトリ別にグループ化したテキストにフォーマットする。
  *

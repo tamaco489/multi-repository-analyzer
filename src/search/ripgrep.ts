@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ResolvedRepo, SearchConfig } from "../config/schema.js";
+import { logger } from "../utils/logger.js";
 import type {
   RipgrepJsonLine,
   RipgrepJsonMatch,
@@ -123,6 +124,14 @@ function parseRipgrepOutput(output: string): SearchMatch[] {
 }
 
 /**
+ * ripgrep の正規表現で特殊文字をエスケープする。
+ * パスリテラルをそのまま検索するために必要。
+ */
+export function escapeForRipgrep(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
  * 1つのリポジトリに対して検索を実行する。
  *
  * scope が "priority" の場合は priority_paths 配下のみ、"full" の場合はリポジトリ全体を検索する。
@@ -186,4 +195,25 @@ function resolvePaths(
   }
 
   return priorityPaths;
+}
+
+/** 複数リポジトリを並列検索する */
+export async function searchRepos(
+  repos: ResolvedRepo[],
+  pattern: string,
+  searchConfig: SearchConfig,
+  options?: { scope?: "priority" | "full"; glob?: string },
+): Promise<SearchResult[]> {
+  return Promise.all(
+    repos.map(async (repo) => {
+      try {
+        return await searchRepo(repo, pattern, searchConfig, options);
+      } catch (err) {
+        logger.warn(
+          `Search failed for ${repo.name}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        return { repoName: repo.name, matches: [] };
+      }
+    }),
+  );
 }

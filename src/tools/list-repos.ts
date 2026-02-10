@@ -1,4 +1,5 @@
 import type { ResolvedConfig } from "../config/schema.js";
+import { textResponse } from "../utils/formatter.js";
 
 /** 設定済みリポジトリの一覧をフォーマットして返す */
 export function handleListRepos(config: ResolvedConfig) {
@@ -25,7 +26,5 @@ export function handleListRepos(config: ResolvedConfig) {
   }
 
   // MCP プロトコルの応答形式 (content 配列にテキストを格納) で返す
-  return {
-    content: [{ type: "text" as const, text: lines.join("\n") }],
-  };
+  return textResponse(lines.join("\n"));
 }
