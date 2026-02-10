@@ -10,10 +10,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadConfig } from "./config/loader.js";
 import {
-  GetRepoContextSchema,
-  handleGetRepoContext,
-} from "./tools/get-repo-context.js";
-import {
   FindApiCallersSchema,
   handleFindApiCallers,
 } from "./tools/find-api-callers.js";
@@ -21,6 +17,10 @@ import {
   FindCrossRepoDependenciesSchema,
   handleFindCrossRepoDependencies,
 } from "./tools/find-cross-repo-dependencies.js";
+import {
+  GetRepoContextSchema,
+  handleGetRepoContext,
+} from "./tools/get-repo-context.js";
 import { handleListRepos } from "./tools/list-repos.js";
 import { handleSearchCode, SearchCodeSchema } from "./tools/search-code.js";
 import { logger } from "./utils/logger.js";
