@@ -10,6 +10,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadConfig } from "./config/loader.js";
 import {
+  GetRepoContextSchema,
+  handleGetRepoContext,
+} from "./tools/get-repo-context.js";
+import {
   FindApiCallersSchema,
   handleFindApiCallers,
 } from "./tools/find-api-callers.js";
@@ -48,6 +52,18 @@ async function main() {
     async () => {
       // 設定済み全リポジトリの情報 (ラベル、パス、ステータス等) をテキストで返す
       return handleListRepos(config);
+    },
+  );
+
+  server.registerTool(
+    "get_repo_context",
+    {
+      description:
+        "リポジトリの README.md や CLAUDE.md 等のコンテキストファイルを取得する。横断検索の前にプロジェクト構成を把握するために使用する。repos/labelsで対象を絞り込み可能。",
+      inputSchema: GetRepoContextSchema,
+    },
+    async (args) => {
+      return handleGetRepoContext(config, args);
     },
   );
 
