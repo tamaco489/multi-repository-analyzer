@@ -1,6 +1,6 @@
 # multi-repository-analyzer
 
-[日本語](./README_ja.md)
+[日本語](./README.ja.md)
 
 A local MCP server for cross-searching and analyzing multiple local repositories.
 It uses ripgrep (`rg`) as the search engine and can be invoked as a tool from MCP clients such as Claude Code.

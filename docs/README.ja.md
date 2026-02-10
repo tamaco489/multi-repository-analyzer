@@ -1,6 +1,6 @@
 # multi-repository-analyzer
 
-[English](./README_en.md)
+[English](./README.md)
 
 複数のローカルリポジトリを横断検索・分析するローカル MCP サーバー。
 ripgrep (`rg`) を検索エンジンとして使用し、Claude Code などの MCP クライアントからツールとして呼び出せる。
