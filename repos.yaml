@@ -1,0 +1,33 @@
+repositories:
+  # --- サンプル定義（利用者が自身の構成に合わせて書き換えてください） ---
+  repo-a:
+    env_key: REPO_A
+    labels: [sample]
+    description: "リポジトリA"
+    priority_paths:
+      - src/
+
+  repo-b:
+    env_key: REPO_B
+    labels: [sample]
+    description: "リポジトリB"
+    priority_paths:
+      - src/
+
+  repo-c:
+    env_key: REPO_C
+    labels: [sample]
+    description: "リポジトリC"
+    priority_paths:
+      - src/
+
+search:
+  max_results: 50
+  context_lines: 3
+  exclude_patterns:
+    - node_modules
+    - .git
+    - vendor
+    - dist
+    - build
+    - "*.min.js"
