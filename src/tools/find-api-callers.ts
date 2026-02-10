@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { resolveTargetRepos } from "../config/loader.js";
 import type { ResolvedConfig } from "../config/schema.js";
-import { searchRepo } from "../search/ripgrep.js";
-import type { SearchMatch, SearchResult } from "../search/types.js";
-import { formatResults } from "../utils/formatter.js";
-import { logger } from "../utils/logger.js";
+import { escapeForRipgrep, searchRepos } from "../search/ripgrep.js";
+import type { SearchMatch } from "../search/types.js";
+import { formatResults, textResponse } from "../utils/formatter.js";
 
 /** find_api_callers ツールの入力スキーマ */
 export const FindApiCallersSchema = z.object({
@@ -17,14 +16,6 @@ export const FindApiCallersSchema = z.object({
     .describe("ラベルでリポジトリをフィルタ"),
   scope: z.enum(["priority", "full"]).default("priority").describe("検索範囲"),
 });
-
-/**
- * ripgrep の正規表現で特殊文字をエスケープする。
- * パスリテラルをそのまま検索するために必要。
- */
-function escapeForRipgrep(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 /**
  * API パスから ripgrep 用の検索パターンを生成する。
@@ -95,45 +86,31 @@ export async function handleFindApiCallers(
   );
 
   if (targetRepos.length === 0) {
-    return {
-      content: [
-        { type: "text" as const, text: "No matching repositories found." },
-      ],
-    };
+    return textResponse("No matching repositories found.");
   }
 
   // API パスから検索パターンを生成し、OR で結合する
   const patterns = buildApiCallerPatterns(params.path);
   const pattern = patterns.join("|");
 
-  // 各リポジトリで検索を実行する
-  const results: SearchResult[] = [];
-  for (const repo of targetRepos) {
-    try {
-      const result = await searchRepo(repo, pattern, config.search, {
-        scope: params.scope,
-      });
+  // 各リポジトリで並列検索を実行する
+  const results = await searchRepos(targetRepos, pattern, config.search, {
+    scope: params.scope,
+  });
 
-      // method 指定時はマッチ行をフィルタリングする
-      // フィルタ後 0 件ならフィルタなしの結果をそのまま使う (メソッドが近くの行に書かれていない可能性があるため)
-      if (params.method && result.matches.length > 0) {
+  // method 指定時はマッチ行をフィルタリングする
+  // フィルタ後 0 件ならフィルタなしの結果をそのまま使う (メソッドが近くの行に書かれていない可能性があるため)
+  if (params.method) {
+    for (const result of results) {
+      if (result.matches.length > 0) {
         const filtered = filterByMethod(result.matches, params.method);
         if (filtered.length > 0) {
           result.matches = filtered;
         }
       }
-
-      results.push(result);
-    } catch (err) {
-      logger.warn(
-        `Search failed for ${repo.name}: ${err instanceof Error ? err.message : String(err)}`,
-      );
     }
   }
 
   // 検索結果をリポジトリ別にフォーマットして返す
-  const text = formatResults(results);
-  return {
-    content: [{ type: "text" as const, text }],
-  };
+  return textResponse(formatResults(results));
 }

@@ -1,10 +1,8 @@
 import { z } from "zod";
 import { resolveTargetRepos } from "../config/loader.js";
 import type { ResolvedConfig } from "../config/schema.js";
-import { searchRepo } from "../search/ripgrep.js";
-import type { SearchResult } from "../search/types.js";
-import { formatResults } from "../utils/formatter.js";
-import { logger } from "../utils/logger.js";
+import { searchRepos } from "../search/ripgrep.js";
+import { formatResults, textResponse } from "../utils/formatter.js";
 
 /** search_code ツールの入力スキーマ */
 export const SearchCodeSchema = z.object({
@@ -42,32 +40,15 @@ export async function handleSearchCode(
 
   // 該当リポジトリがなければ早期リターン
   if (targetRepos.length === 0) {
-    return {
-      content: [
-        { type: "text" as const, text: "No matching repositories found." },
-      ],
-    };
+    return textResponse("No matching repositories found.");
   }
 
-  // 各リポジトリで逐次検索。失敗したリポジトリはスキップし、他の結果は返却する
-  const results: SearchResult[] = [];
-  for (const repo of targetRepos) {
-    try {
-      const result = await searchRepo(repo, params.query, config.search, {
-        scope: params.scope,
-        glob: params.glob,
-      });
-      results.push(result);
-    } catch (err) {
-      logger.warn(
-        `Search failed for ${repo.name}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-  }
+  // 各リポジトリで並列検索。失敗したリポジトリはスキップし、他の結果は返却する
+  const results = await searchRepos(targetRepos, params.query, config.search, {
+    scope: params.scope,
+    glob: params.glob,
+  });
 
   // 検索結果をリポジトリ別にグループ化したテキストにフォーマットして返す
-  const text = formatResults(results);
-  return {
-    content: [{ type: "text" as const, text }],
-  };
+  return textResponse(formatResults(results));
 }

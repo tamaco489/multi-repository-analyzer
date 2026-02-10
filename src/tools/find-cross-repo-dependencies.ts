@@ -1,9 +1,7 @@
 import { z } from "zod";
 import type { ResolvedConfig, ResolvedRepo } from "../config/schema.js";
-import { searchRepo } from "../search/ripgrep.js";
-import type { SearchResult } from "../search/types.js";
-import { formatResults } from "../utils/formatter.js";
-import { logger } from "../utils/logger.js";
+import { escapeForRipgrep, searchRepos } from "../search/ripgrep.js";
+import { formatResults, textResponse } from "../utils/formatter.js";
 
 /** find_cross_repo_dependencies ツールの入力スキーマ */
 export const FindCrossRepoDependenciesSchema = z.object({
@@ -20,14 +18,6 @@ export const FindCrossRepoDependenciesSchema = z.object({
     .describe("追加の検索キーワード (例: パス、モジュール名、関数名)"),
   scope: z.enum(["priority", "full"]).default("priority").describe("検索範囲"),
 });
-
-/**
- * ripgrep の正規表現で特殊文字をエスケープする。
- * パスリテラルをそのまま検索するために必要。
- */
-function escapeForRipgrep(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 /**
  * リポジトリ名から各種命名規則のバリエーションを生成する。
@@ -152,14 +142,9 @@ export async function handleFindCrossRepoDependencies(
     (r) => r.name === params.source_repo && r.available,
   );
   if (!sourceRepo) {
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: `Source repository "${params.source_repo}" not found or unavailable.`,
-        },
-      ],
-    };
+    return textResponse(
+      `Source repository "${params.source_repo}" not found or unavailable.`,
+    );
   }
 
   // 検索対象リポジトリを解決 (source_repo 自身は除外)
@@ -170,42 +155,24 @@ export async function handleFindCrossRepoDependencies(
   );
 
   if (targetRepos.length === 0) {
-    return {
-      content: [
-        { type: "text" as const, text: "No target repositories available." },
-      ],
-    };
+    return textResponse("No target repositories available.");
   }
 
   // source_repo の情報から検索パターンを生成し、OR で結合
   const patterns = buildCrossRepoPatterns(sourceRepo, params.path);
   const pattern = patterns.join("|");
 
-  // 各 target_repo で検索を実行
-  const results: SearchResult[] = [];
-  for (const repo of targetRepos) {
-    try {
-      // 生成したパターンで対象リポジトリ内を ripgrep 検索し、マッチ結果を取得する
-      const result = await searchRepo(repo, pattern, config.search, {
-        scope: params.scope,
-      });
-      results.push(result);
-    } catch (err) {
-      logger.warn(
-        `Search failed for ${repo.name}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-  }
+  // 各 target_repo で並列検索を実行
+  const results = await searchRepos(targetRepos, pattern, config.search, {
+    scope: params.scope,
+  });
 
   // 依存方向が分かるヘッダを付けて結果をフォーマット
   const body = formatResults(results);
 
-  const text =
+  return textResponse(
     body === "No matches found."
       ? `No dependencies from "${sourceRepo.name}" found in target repositories.`
-      : `Dependencies from "${sourceRepo.name}" found in target repositories:\n\n${body}`;
-
-  return {
-    content: [{ type: "text" as const, text }],
-  };
+      : `Dependencies from "${sourceRepo.name}" found in target repositories:\n\n${body}`,
+  );
 }
