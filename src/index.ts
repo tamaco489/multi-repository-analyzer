@@ -10,6 +10,10 @@ import * as path from "node:path";
 import { loadConfig } from "./config/loader.js";
 import { logger } from "./utils/logger.js";
 import { handleListRepos } from "./tools/list-repos.js";
+import {
+  handleSearchCode,
+  SearchCodeSchema,
+} from "./tools/search-code.js";
 
 const pkg = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
@@ -24,6 +28,8 @@ async function main() {
     version: pkg.version,
   });
 
+  // registerTool でツールを MCP クライアント（Claude Code 等）に公開する。
+  // クライアントは description と inputSchema をもとにツールの用途・引数を認識し、必要に応じて自動で呼び出す。
   server.registerTool(
     "list_repos",
     {
@@ -35,6 +41,20 @@ async function main() {
     },
   );
 
+  server.registerTool(
+    "search_code",
+    {
+      description:
+        "汎用コード検索。正規表現パターンで複数リポジトリを横断検索する。repos/labelsで検索対象を絞り込み可能。scopeでpriority_paths限定(デフォルト)または全体検索を選択。",
+      inputSchema: SearchCodeSchema,
+    },
+    async (args) => {
+      return handleSearchCode(config, args);
+    },
+  );
+
+  // stdin/stdout で JSON-RPC メッセージをやり取りする。
+  // stdout は通信に使用されるため、ログは stderr に出力する必要がある。
   const transport = new StdioServerTransport();
   await server.connect(transport);
   logger.info("MCP server started");
