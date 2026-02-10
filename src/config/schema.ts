@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SEARCH_DEFAULTS } from "../constants/search.js";
 
 /** repos.yaml の単一リポジトリ定義 */
 const RepoConfigSchema = z.object({
@@ -10,9 +11,9 @@ const RepoConfigSchema = z.object({
 
 /** repos.yaml の検索設定セクション */
 const SearchConfigSchema = z.object({
-  max_results: z.number().default(50),
-  context_lines: z.number().default(3),
-  exclude_patterns: z.array(z.string()).default([]),
+  max_results: z.number().default(SEARCH_DEFAULTS.MAX_RESULTS),
+  context_lines: z.number().default(SEARCH_DEFAULTS.CONTEXT_LINES),
+  exclude_patterns: z.array(z.string()).default([...SEARCH_DEFAULTS.EXCLUDE_PATTERNS]),
 });
 
 /** repos.yaml 全体のバリデーションスキーマ */
