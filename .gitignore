@@ -1,4 +1,11 @@
+# Temporary files
 tmp/
+
+# Dependencies
 node_modules/
+
+# Build output
 build/
+
+# Environment variables
 .env
