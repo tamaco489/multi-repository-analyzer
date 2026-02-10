@@ -1,5 +1,10 @@
 type LogLevel = "debug" | "info" | "warn" | "error";
 
+/**
+ * stderr にタイムスタンプ付きでログを出力する。
+ *
+ * stdout は MCP の JSON-RPC 通信に使用されるため、すべてのログは stderr に出力する。
+ */
 function log(level: LogLevel, message: string): void {
   const timestamp = new Date().toISOString();
   process.stderr.write(`[${timestamp}] [${level.toUpperCase()}] ${message}\n`);
